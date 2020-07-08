@@ -4133,9 +4133,9 @@ process.datasets = cms.PSet(
     'HLT_PFMET130_PFMHT130_IDTight_v20',
     'HLT_PFMET140_PFMHT140_IDTight_CaloBTagDeepCSV_3p1_v8',
     'HLT_PFMET140_PFMHT140_IDTight_v20',
-    'HLT_PFMET200_HBHECleaned_v9',
     'HLT_PFMET200_HBHE_BeamHaloCleaned_v9',
     'HLT_PFMET200_NotCleaned_v9',
+    'HLT_PuppiV4MET200_NotCleaned_v0',
     'HLT_PFMET250_HBHECleaned_v9',
     'HLT_PFMET300_HBHECleaned_v9',
     'HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_PFHT60_v9',
@@ -4715,8 +4715,8 @@ process.datasets = cms.PSet(
     'HLT_PFMET140_PFMHT140_IDTight_CaloBTagDeepCSV_3p1_v8',
     'HLT_PFMET140_PFMHT140_IDTight_v20',
     'HLT_PFMET200_HBHECleaned_v9',
-    'HLT_PFMET200_HBHE_BeamHaloCleaned_v9',
     'HLT_PFMET200_NotCleaned_v9',
+    'HLT_PuppiV4MET200_NotCleaned_v9',
     'HLT_PFMET250_HBHECleaned_v9',
     'HLT_PFMET300_HBHECleaned_v9',
     'HLT_PFMETNoMu100_PFMHTNoMu100_IDTight_PFHT60_v9',
@@ -15416,6 +15416,157 @@ process.hltOutputScoutingPF = cms.OutputModule( "PoolOutputModule",
       'keep *_hltScoutingPrimaryVertexPacker_*_*',
       'keep edmTriggerResults_*_*_*' )
 )
+process.hltL1sAllETMHFSeeds = cms.EDFilter("HLTL1TSeed",
+    L1EGammaInputTag = cms.InputTag("hltGtStage2Digis","EGamma"),
+    L1EtSumInputTag = cms.InputTag("hltGtStage2Digis","EtSum"),
+    L1GlobalInputTag = cms.InputTag("hltGtStage2Digis"),
+    L1JetInputTag = cms.InputTag("hltGtStage2Digis","Jet"),
+    L1MuonInputTag = cms.InputTag("hltGtStage2Digis","Muon"),
+    L1ObjectMapInputTag = cms.InputTag("hltGtStage2ObjectMap"),
+    L1SeedsLogicalExpression = cms.string('L1_ETMHF100 OR L1_ETMHF110 OR L1_ETM150 OR L1_ETMHF120 OR L1_ETMHF150'),
+    L1TauInputTag = cms.InputTag("hltGtStage2Digis","Tau"),
+    saveTags = cms.bool(True)
+)
+
+process.hltMET90 = cms.EDFilter("HLT1CaloMET",
+    MaxEta = cms.double(-1.0),
+    MaxMass = cms.double(-1.0),
+    MinE = cms.double(-1.0),
+    MinEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    MinN = cms.int32(1),
+    MinPt = cms.double(90.0),
+    inputTag = cms.InputTag("hltMet"),
+    saveTags = cms.bool(True),
+    triggerType = cms.int32(87)
+)
+
+process.hltPrePFMET200NotCleaned = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtStage2Digis"),
+    offset = cms.uint32(0)
+)
+
+process.hltPFMET200 = cms.EDFilter("HLT1PFMET",
+    MaxEta = cms.double(-1.0),
+    MaxMass = cms.double(-1.0),
+    MinE = cms.double(-1.0),
+    MinEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    MinN = cms.int32(1),
+    MinPt = cms.double(200.0),
+    inputTag = cms.InputTag("hltPFMETProducer"),
+    saveTags = cms.bool(True),
+    triggerType = cms.int32(87)
+)
+
+process.hltPuppiV4 = cms.EDProducer("CandViewMerger",
+    src = cms.VInputTag("hltPuppiV4NoLeptons", "hltParticleFlowLeptons")
+)
+
+
+process.hltPuppiV4MET = cms.EDProducer("PFMETProducer",
+    alias = cms.string(''),
+    calculateSignificance = cms.bool(False),
+    globalThreshold = cms.double(0.0),
+    src = cms.InputTag("hltPuppiV4")
+)
+process.hltPuppiV4NoLeptons = cms.EDProducer("PuppiProducer",
+    DeltaZCut = cms.double(0.3),
+    EtaMaxCharged = cms.double(99999.0),
+    EtaMaxPhotons = cms.double(2.5),
+    MinPuppiWeight = cms.double(0.01),
+    PtMaxCharged = cms.double(-1.0),
+    PtMaxNeutrals = cms.double(200.0),
+    PtMaxNeutralsStartSlope = cms.double(0.0),
+    PtMaxPhotons = cms.double(20.0),
+    UseDeltaZCut = cms.bool(True),
+    UseFromPVLooseTight = cms.bool(True),
+    algos = cms.VPSet(
+        cms.PSet(
+            EtaMaxExtrap = cms.double(2.0),
+            MedEtaSF = cms.vdouble(1.0),
+            MinNeutralPt = cms.vdouble(0.2),
+            MinNeutralPtSlope = cms.vdouble(0.015),
+            RMSEtaSF = cms.vdouble(1.0),
+            etaMax = cms.vdouble(2.5),
+            etaMin = cms.vdouble(0.0),
+            ptMin = cms.vdouble(0.0),
+            puppiAlgos = cms.VPSet(cms.PSet(
+                algoId = cms.int32(5),
+                applyLowPUCorr = cms.bool(True),
+                combOpt = cms.int32(0),
+                cone = cms.double(0.4),
+                rmsPtMin = cms.double(0.1),
+                rmsScaleFactor = cms.double(1.0),
+                useCharged = cms.bool(True)
+            ))
+        ),
+        cms.PSet(
+            EtaMaxExtrap = cms.double(2.0),
+            MedEtaSF = cms.vdouble(0.9, 0.75),
+            MinNeutralPt = cms.vdouble(1.7, 2.0),
+            MinNeutralPtSlope = cms.vdouble(0.08, 0.08),
+            RMSEtaSF = cms.vdouble(1.2, 0.95),
+            etaMax = cms.vdouble(3.0, 10.0),
+            etaMin = cms.vdouble(2.5, 3.0),
+            ptMin = cms.vdouble(0.0, 0.0),
+            puppiAlgos = cms.VPSet(cms.PSet(
+                algoId = cms.int32(5),
+                applyLowPUCorr = cms.bool(True),
+                combOpt = cms.int32(0),
+                cone = cms.double(0.4),
+                rmsPtMin = cms.double(0.5),
+                rmsScaleFactor = cms.double(1.0),
+                useCharged = cms.bool(False)
+            ))
+        )
+    ),
+    applyCHS = cms.bool(True),
+    candName = cms.InputTag("hltParticleFlowNoLeptons"),
+    clonePackedCands = cms.bool(False),
+    invertPuppi = cms.bool(False),
+    puppiDiagnostics = cms.bool(False),
+    puppiForLeptons = cms.bool(False),
+    useExistingWeights = cms.bool(False),
+    useExp = cms.bool(False),
+    useWeightsNoLep = cms.bool(False),
+    vertexName = cms.InputTag("hltPixelVertices"),
+    vtxNdofCut = cms.int32(0),
+    vtxZCut = cms.double(24)
+)
+
+
+process.hltPuppiV4NoMu = cms.EDProducer("CandViewMerger",
+    src = cms.VInputTag("hltPuppiV4NoLeptons", "hltParticleFlowElectrons")
+)
+process.hltPrePuppiV4MET200NotCleaned = cms.EDFilter("HLTPrescaler",
+    L1GtReadoutRecordTag = cms.InputTag("hltGtStage2Digis"),
+    offset = cms.uint32(0)
+)
+process.hltPuppiV4METNoMu200 = cms.EDFilter("HLT1PFMET",
+    MaxEta = cms.double(-1.0),
+    MaxMass = cms.double(-1.0),
+    MinE = cms.double(-1.0),
+    MinEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    MinN = cms.int32(1),
+    MinPt = cms.double(200.),
+    inputTag = cms.InputTag("hltPuppiV4METNoMu"),
+    saveTags = cms.bool(True),
+    triggerType = cms.int32(87)
+)
+process.hltPuppiV4MET200 = cms.EDFilter("HLT1PFMET",
+    MaxEta = cms.double(-1.0),
+    MaxMass = cms.double(-1.0),
+    MinE = cms.double(-1.0),
+    MinEta = cms.double(-1.0),
+    MinMass = cms.double(-1.0),
+    MinN = cms.int32(1),
+    MinPt = cms.double(200.),
+    inputTag = cms.InputTag("hltPuppiV4MET"),
+    saveTags = cms.bool(True),
+    triggerType = cms.int32(87)
+)
 
 process.HLTL1UnpackerSequence = cms.Sequence( process.hltGtStage2Digis + process.hltGtStage2ObjectMap )
 process.HLTBeamSpot = cms.Sequence( process.hltScalersRawToDigi + process.hltOnlineBeamSpot )
@@ -15505,15 +15656,18 @@ process.HLTGsfElectronSequence = cms.Sequence( process.hltEgammaCkfTrackCandidat
 process.HLTTrackReconstructionForPFNoMu = cms.Sequence( process.HLTDoLocalPixelSequence + process.HLTRecopixelvertexingSequence + process.HLTDoLocalStripSequence + process.HLTIterativeTrackingIter02 )
 process.HLTTrackReconstructionForIsoElectronIter02 = cms.Sequence( process.HLTPreAK4PFJetsRecoSequence + process.HLTTrackReconstructionForPFNoMu )
 process.HLTPFScoutingSequence = cms.Sequence( process.HLTAK4PFJetsSequence + process.hltPFMETProducer + process.HLTMuIsolationSequence + process.HLTDoFullUnpackingEgammaEcalSequence + process.HLTPFClusteringForEgamma + process.hltEgammaCandidates + process.hltEgammaClusterShape + process.HLTDoLocalHcalSequence + process.HLTFastJetForEgamma + process.hltEgammaHoverE + process.hltEgammaEcalPFClusterIso + process.HLTPFHcalClusteringForEgamma + process.hltEgammaHcalPFClusterIso + process.HLTElePixelMatchSequence + process.HLTGsfElectronSequence + process.HLTTrackReconstructionForIsoElectronIter02 + process.hltEgammaEleGsfTrackIso )
+
 process.HLTEndSequence = cms.Sequence( process.hltBoolEnd )
 process.HLTPFScoutingPackingSequence = cms.Sequence( process.hltScoutingPFPacker + process.hltScoutingMuonPacker + process.hltScoutingEgammaPacker )
 
 process.HLTriggerFirstPath = cms.Path( process.hltGetConditions + process.hltGetRaw + process.hltBoolFalse )
 process.DST_ZeroBias_CaloScouting_PFScouting_v14 = cms.Path( process.HLTBeginSequence + process.hltL1sZeroBias + process.hltPreDSTZeroBiasCaloScoutingPFScouting + process.HLTCaloScoutingSequence + process.HLTPFScoutingSequence + process.HLTEndSequence )
 process.ScoutingPFOutput = cms.EndPath( process.hltGtStage2Digis + process.hltPreScoutingPFOutput + process.hltFEDSelectorL1 + process.HLTPFScoutingPackingSequence + process.hltScoutingPrimaryVertexPacker + process.hltOutputScoutingPF )
+process.HLT_PFMET200_NotCleaned_v9 = cms.Path(process.HLTBeginSequence+process.hltL1sAllETMHFSeeds+process.hltPrePFMET200NotCleaned+process.HLTRecoMETSequence+process.hltMET90+process.HLTAK4PFJetsSequence+process.hltPFMETProducer+process.hltPFMET200+process.HLTEndSequence)
 
+process.HLT_PuppiV4MET200_NotCleaned_v0 = cms.Path(process.HLTBeginSequence + process.hltL1sAllETMHFSeeds + process.hltPrePuppiV4MET200NotCleaned + process.HLTRecoMETSequence + process.hltMET90 + process.HLTAK4PFJetsSequence+process.hltPuppiV4MET + process.hltPuppiV4MET200 + process.HLTEndSequence)
 
-process.HLTSchedule = cms.Schedule( *(process.HLTriggerFirstPath, process.DST_ZeroBias_CaloScouting_PFScouting_v14, process.ScoutingPFOutput ))
+process.HLTSchedule = cms.Schedule( *(process.HLTriggerFirstPath, process.DST_ZeroBias_CaloScouting_PFScouting_v14,process.HLT_PFMET200_NotCleaned_v9,process.HLT_PuppiV4MET200_NotCleaned_v0, process.ScoutingPFOutput ))
 
 
 process.source = cms.Source( "PoolSource",
