@@ -44,17 +44,17 @@ opts.register('wantSummary', False,
               vpo.VarParsing.varType.bool,
               'show cmsRun summary at job completion')
 
-opts.register('isData', False,
+opts.register('isData', True,
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.bool,
               'apply customizations for real collisions Data')
 
-opts.register('era', None,
+opts.register('era', "2018",
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.string,
               'keyword for data-taking period')
 
-opts.register('globalTag', None,
+opts.register('globalTag', "102X_dataRun2_v13",
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.string,
               'argument of process.GlobalTag.globaltag')
@@ -67,6 +67,10 @@ opts.register('reco', 'HLT',
 opts.register('output', 'out.root',
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.string,
+              'path to output ROOT file')
+opts.register('subtractMu', False,
+              vpo.VarParsing.multiplicity.singleton,
+              vpo.VarParsing.varType.bool,
               'path to output ROOT file')
 
 opts.parseArguments()
@@ -86,7 +90,9 @@ process.load('Configuration.StandardSequences.MagneticField_cff')
 ### PoolSource (EDM input)
 ###
 process.source = cms.Source('PoolSource',
-  fileNames = cms.untracked.vstring(opts.inputFiles),
+  #fileNames = cms.untracked.vstring("/store/data/Run2016B/SingleMuon/MINIAOD/17Jul2018_ver2-v1/20000/E44FFA08-629A-E811-BDAE-1CB72C1B65D4.root"),
+  fileNames = cms.untracked.vstring("/store/data/Run2018B/EGamma/MINIAOD/17Sep2018-v1/00000/090C4819-004F-9C4D-A113-1BCDD65DDF99.root"),
+  #fileNames = cms.untracked.vstring(opts.inputFiles),
   secondaryFileNames = cms.untracked.vstring(opts.secondaryInputFiles),
   # number of events to be skipped
   skipEvents = cms.untracked.uint32(opts.skipEvents)
@@ -192,6 +198,9 @@ process, userMuonsCollection = userMuons(process)
 from JMETriggerAnalysis.NTuplizers.userElectrons_cff import userElectrons
 process, userElectronsCollection = userElectrons(process, era=opts.era)
 
+###METs
+from JMETriggerAnalysis.NTuplizers.userMETs_cff import userMETs,updatedMET_tag
+process = userMETs(process, isData=opts.isData, era=opts.era, subtractMu=opts.subtractMu) 
 ## Electrons
 from JMETriggerAnalysis.NTuplizers.userJets_AK04PFCHS_cff import userJets_AK04PFCHS
 process, userJetsAK04PFCHSCollection = userJets_AK04PFCHS(process, era=opts.era, isData=opts.isData)
@@ -508,8 +517,12 @@ process.JMETriggerNTuple = cms.EDAnalyzer('JMETriggerNTuple',
   ),
 
   patMETCollections = cms.PSet(
-    offlineMETs = cms.InputTag('slimmedMETs'),
-    offlineMETsPuppi = cms.InputTag('slimmedMETsPuppi'),
+    offlineMETs = cms.InputTag('slimmedMETs'+updatedMET_tag),
+    #offlineMETsPuppi = cms.InputTag('slimmedMETsPuppinoMu'),
+    #offlineMETsPuppi_EGCor = cms.InputTag('puppiMETEGCor'),
+    #offlineMETsPuppi_MuCor = cms.InputTag('puppiMETMuCor'),
+    #offlineMETs_MuEGClean = cms.InputTag('slimmedMETsMuEGClean'),
+    #offlineMETs_EGClean = cms.InputTag('slimmedMETsEGClean'),
   ),
 
   patMuonCollections = cms.PSet(
@@ -645,6 +658,7 @@ process.triggerObjMatchValueMapsSeq = cms.Sequence(process.triggerObjMatchValueM
 
 process.analysisCollectionsPath = cms.Path(
     process.METFiltersSeq
+  + process.METSeq
   + process.userMuonsSeq
   + process.userElectronsSeq
   + process.evtselMuons

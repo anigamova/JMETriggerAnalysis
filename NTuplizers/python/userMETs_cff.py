@@ -1,83 +1,60 @@
 import FWCore.ParameterSet.Config as cms
 
-def userMETs(process, isData, era):
+def userMETs(process, isData, era,subtractMu):
 
     ### MET recalculation
     from PhysicsTools.PatUtils.tools.runMETCorrectionsAndUncertainties import runMetCorAndUncFromMiniAOD
     from PhysicsTools.PatAlgos.slimming.puppiForMET_cff import makePuppiesFromMiniAOD
 
     # https://twiki.cern.ch/twiki/bin/view/CMS/MissingETUncertaintyPrescription#Puppi_MET
-    makePuppiesFromMiniAOD(process, True)
+    #if subtractMu:
+    process.noMuCands = cms.EDFilter("CandPtrSelector",
+                                 src=cms.InputTag("packedPFCandidates"),
+                                 cut=cms.string("abs(pdgId)!=13")
+                                 )
+    updatedMET_tag="";
 
-    if 'era' == '2016':
+    if subtractMu: 
+      updatedMET_tag="noMu";
+      if era == '2016':
+  
+         runMetCorAndUncFromMiniAOD(process, isData = isData,
+           fixEE2017 = False,pfCandColl=cms.InputTag("noMuCands"),postfix="noMu",recoMetFromPFCs=True,
+         )
+      elif era == '2017':
+         runMetCorAndUncFromMiniAOD(process, isData = isData,
+           fixEE2017 = True,
+           fixEE2017Params = {'userawPt': True, 'ptThreshold': 50.0, 'minEtaThreshold': 2.65, 'maxEtaThreshold': 3.139},
+           pfCandColl=cms.InputTag("noMuCands"),postfix="noMu",
+         )
 
-       runMetCorAndUncFromMiniAOD(process, isData = isData,
-         fixEE2017 = False,
-       )
+      elif era == '2018':
+         runMetCorAndUncFromMiniAOD(process, isData = isData,recoMetFromPFCs=True,
+           fixEE2017 = False,pfCandColl=cms.InputTag("noMuCands"),postfix="noMu",
+         )
 
-       _lastMETCollection = 'slimmedMETs'+updatedMET_tag
-
-       runMetCorAndUncFromMiniAOD(process,
-         isData = isData,
-         metType = 'Puppi',
-         postfix = 'Puppi',
-         jetFlavor = 'AK4PFPuppi',
-       )
-
-       process.puppiNoLep.useExistingWeights = False
-       process.puppi.useExistingWeights = False
-
-#       process.METSequence *= getattr(process, 'puppiMETSequence')
-#       process.METSequence *= getattr(process, 'fullPatMetSequencePuppi')
-#       process.METSequence *= getattr(process, 'fullPatMetSequence'+updatedMET_tag)
-
-    elif era == '2017':
-
-       runMetCorAndUncFromMiniAOD(process, isData = isData,
-         fixEE2017 = True,
-         fixEE2017Params = {'userawPt': True, 'ptThreshold': 50.0, 'minEtaThreshold': 2.65, 'maxEtaThreshold': 3.139},
-       )
-
-       _lastMETCollection = 'slimmedMETs'+updatedMET_tag
-
-       runMetCorAndUncFromMiniAOD(process,
-         isData = isData,
-         metType = 'Puppi',
-         postfix = 'Puppi',
-         jetFlavor = 'AK4PFPuppi',
-       )
-
-       process.puppiNoLep.useExistingWeights = False
-       process.puppi.useExistingWeights = False
-
-#       process.METSequence *= getattr(process, 'puppiMETSequence')
-#       process.METSequence *= getattr(process, 'fullPatMetSequence'+'Puppi')
-#       process.METSequence *= getattr(process, 'fullPatMetSequence'+updatedMET_tag)
-
-    elif era == '2018':
-
-       runMetCorAndUncFromMiniAOD(process, isData = isData, postfix = updatedMET_tag,
-         fixEE2017 = False,
-       )
-
-       runMetCorAndUncFromMiniAOD(process,
-         isData = isData,
-         metType = 'Puppi',
-         postfix = 'Puppi',
-         jetFlavor = 'AK4PFPuppi',
-       )
-
-       process.puppiNoLep.useExistingWeights = False
-       process.puppi.useExistingWeights = False
+      else:
+         raise RuntimeError('userMETs_cff.py -- invalid value for "era"OA: '+str(era))
 
     else:
-       raise RuntimeError('userMETs_cff.py -- invalid value for "era"OA: '+str(era))
-    ### ---
+      if era == '2016':
 
-#    process.userMETsTask = cms.Task(
-#      process.puppiMETSequence,
-#      process.fullPatMetSequencePuppi,
-#      getattr(process, 'fullPatMetSequence'+updatedMET_tag),
-#    )
+         runMetCorAndUncFromMiniAOD(process, isData = isData,
+           fixEE2017 = False,recoMetFromPFCs=True,
+         )
+      elif era == '2017':
+         runMetCorAndUncFromMiniAOD(process, isData = isData,
+           fixEE2017 = True,
+           fixEE2017Params = {'userawPt': True, 'ptThreshold': 50.0, 'minEtaThreshold': 2.65, 'maxEtaThreshold': 3.139},
+         )
 
+      elif era == '2018':
+         runMetCorAndUncFromMiniAOD(process, isData = isData,
+           fixEE2017 = False,
+         )
+
+    process.METSeq = cms.Sequence(
+      process.noMuCands*
+      getattr(process, 'fullPatMetSequence'+updatedMET_tag)#process.fullPatMetSequencePuppinoMu,
+    )
     return process
