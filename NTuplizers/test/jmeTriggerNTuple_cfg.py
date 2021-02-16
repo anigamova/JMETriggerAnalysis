@@ -199,7 +199,9 @@ from JMETriggerAnalysis.NTuplizers.userElectrons_cff import userElectrons
 process, userElectronsCollection = userElectrons(process, era=opts.era)
 
 ###METs
-from JMETriggerAnalysis.NTuplizers.userMETs_cff import userMETs,updatedMET_tag
+from JMETriggerAnalysis.NTuplizers.userMETs_cff import userMETs
+updatedMET_tag=""
+if opts.subtractMu:updatedMET_tag="noMu"
 process = userMETs(process, isData=opts.isData, era=opts.era, subtractMu=opts.subtractMu) 
 ## Electrons
 from JMETriggerAnalysis.NTuplizers.userJets_AK04PFCHS_cff import userJets_AK04PFCHS
