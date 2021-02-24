@@ -43,7 +43,6 @@ if __name__ == '__main__':
     for dataset in content :
         for run in runs:
             if 'Run2017%s'%run in dataset:
-                if 'SingleMuon' in dataset: config.JobType.pyCfgParams = ['globalTag=102X_dataRun2_v13',"isData=True","era=2017","subtractMu=True"]
                 config.Data.inputDataset = dataset
                 config.General.requestName = "EffStudiesRun2_"+dataset.split('/')[1][:30]+dataset.split('/')[2][:30]
                 config.Data.outputDatasetTag = dataset.split('/')[2][:30]

@@ -200,9 +200,7 @@ process, userElectronsCollection = userElectrons(process, era=opts.era)
 
 ###METs
 from JMETriggerAnalysis.NTuplizers.userMETs_cff import userMETs
-updatedMET_tag=""
-if opts.subtractMu:updatedMET_tag="noMu"
-process = userMETs(process, isData=opts.isData, era=opts.era, subtractMu=opts.subtractMu) 
+process = userMETs(process, isData=opts.isData, era=opts.era) 
 ## Electrons
 from JMETriggerAnalysis.NTuplizers.userJets_AK04PFCHS_cff import userJets_AK04PFCHS
 process, userJetsAK04PFCHSCollection = userJets_AK04PFCHS(process, era=opts.era, isData=opts.isData)
@@ -519,12 +517,10 @@ process.JMETriggerNTuple = cms.EDAnalyzer('JMETriggerNTuple',
   ),
 
   patMETCollections = cms.PSet(
-    offlineMETs = cms.InputTag('slimmedMETs'+updatedMET_tag),
-    #offlineMETsPuppi = cms.InputTag('slimmedMETsPuppinoMu'),
-    #offlineMETsPuppi_EGCor = cms.InputTag('puppiMETEGCor'),
-    #offlineMETsPuppi_MuCor = cms.InputTag('puppiMETMuCor'),
-    #offlineMETs_MuEGClean = cms.InputTag('slimmedMETsMuEGClean'),
-    #offlineMETs_EGClean = cms.InputTag('slimmedMETsEGClean'),
+    offlineMETs = cms.InputTag('slimmedMETs'),
+    offlineMETs_Puppi = cms.InputTag('slimmedMETspuppi'),
+    offlineMETs_noMu = cms.InputTag('slimmedMETsnoMu'),
+    offlineMETs_PuppinoMu = cms.InputTag('slimmedMETspuppinoMu'),
   ),
 
   patMuonCollections = cms.PSet(
