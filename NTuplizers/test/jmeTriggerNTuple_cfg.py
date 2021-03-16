@@ -68,10 +68,6 @@ opts.register('output', 'out.root',
               vpo.VarParsing.multiplicity.singleton,
               vpo.VarParsing.varType.string,
               'path to output ROOT file')
-opts.register('subtractMu', False,
-              vpo.VarParsing.multiplicity.singleton,
-              vpo.VarParsing.varType.bool,
-              'path to output ROOT file')
 
 opts.parseArguments()
 
